@@ -1,129 +1,66 @@
-//#DirectXÇÃÇ‚Ç¬
-#include"ErrorException.h"
+Ôªø#include "WinApp.h"
+#include "DirectXCommon.h"
+#include "GameScene.h"
 
-
-//é©çÏ.h
-#include"WindowsApp.h"
-#include"Input.h"
-#include"Controller.h"
-#include"DirectX12Core.h"
-#include"Mesh.h"
-#include"3DMesh.h"
-#include"Camera.h"
-#include"GameScene.h"
-#include"FPS.h"
-#include"ModelPipeLine.h"
-#include"TextureManager.h"
-#include"DefaultMaterial.h"
-#include"AudioManager.h"
-//pragma comment
-
-
-//using namespace
-
-using namespace AliceMathF;
-
-#ifdef _DEBUG
-int main()
+// Windows„Ç¢„Éó„É™„Åß„ÅÆ„Ç®„É≥„Éà„É™„Éº„Éù„Ç§„É≥„Éà(mainÈñ¢Êï∞)
+int WINAPI WinMain(HINSTANCE,HINSTANCE,LPSTR,int)
 {
-	HANDLE stdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-	DWORD consoleMode = 0;
-	GetConsoleMode(stdOut, &consoleMode);
-	consoleMode = consoleMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-	SetConsoleMode(stdOut, consoleMode);
-#else
-#include<windows.h>
-int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
-{
-#endif
+	// Ê±éÁî®Ê©üËÉΩ
+	WinApp* win = nullptr;
+	DirectXCommon* dxCommon = nullptr;
+	Input* input = nullptr;	
+	GameScene* gameScene = nullptr;
 
+	// „Ç≤„Éº„É†„Ç¶„Ç£„É≥„Éâ„Ç¶„ÅÆ‰ΩúÊàê
+	win = WinApp::GetInstance();
+	win->CreateGameWindow();
+		
+	// DirectXÂàùÊúüÂåñÂá¶ÁêÜ
+	dxCommon = DirectXCommon::GetInstance();
+	dxCommon->Initialize(win);
 
-	WindowsApp* windowsApp = WindowsApp::GetInstance();//WindowsAppÉNÉâÉXì«Ç›çûÇ›
-	windowsApp->CreatWindow();//ÉEÉBÉìÉhÉEê∂ê¨
+#pragma region Ê±éÁî®Ê©üËÉΩÂàùÊúüÂåñ
+	// ÂÖ•Âäõ„ÅÆÂàùÊúüÂåñ
+	input = new Input();
+	input->Initialize(win->GetHInstance(), win->GetHwnd());
 
-	//DirectXèâä˙âªèàóùÇ±Ç±Ç©ÇÁ
+	// „Çπ„Éó„É©„Ç§„ÉàÈùôÁöÑÂàùÊúüÂåñ
+	Sprite::StaticInitialize(dxCommon->GetDevice(), WinApp::kWindowWidth, WinApp::kWindowHeight);
+	
+	// 3D„Ç™„Éñ„Ç∏„Çß„ÇØ„ÉàÈùôÁöÑÂàùÊúüÂåñ
+	Object3d::StaticInitialize(dxCommon->GetDevice(), WinApp::kWindowWidth, WinApp::kWindowHeight);
+#pragma endregion
 
-	DirectX12Core* DirectX12Core = DirectX12Core::GetInstance();//DirectX12CoreÉNÉâÉXì«Ç›çûÇ›
-	DirectX12Core->DirectXInitialize();//DirectX12èâä˙âª
-	DirectX12Core->SetBackScreenColor(0.1f, 0.25f, 0.5f, 0.0f);	//îwåiÇÃêFïœçX(R,G,B,A)
-
-	//DirectXèâä˙âªèàóùÇ±Ç±Ç‹Ç≈
-
-	//ï`âÊèâä˙âªèàóùÇ±Ç±Ç©ÇÁ
-	Mesh* mesh = Mesh::GetInstance();
-	Mesh3D* mesh3D = Mesh3D::GetInstance();
-
-	ModelPipeLine* pipeline = ModelPipeLine::GetInstance();
-	pipeline->Initialize();
-
-	TextureManager* textureManager = TextureManager::GetInstance();
-	textureManager->Initialize();
-
-	AudioManager* audioManager = AudioManager::GetInstance();
-	audioManager->Initialize();
-
-	DefaultMaterialInitialize();
-	//ï`âÊèâä˙âªèàóùÇ±Ç±Ç‹Ç≈
-
-	Input* input = Input::GetInstance();
-	input->Initialize();
-
-	GameScene* gameScene = GameScene::GetInstance();
-	gameScene->Initialize();
-
-	FPS* fps = new FPS;
-
-	//ÉQÅ[ÉÄÉãÅ[Év
+	// „Ç≤„Éº„É†„Ç∑„Éº„É≥„ÅÆÂàùÊúüÂåñ
+	gameScene = new GameScene();
+	gameScene->Initialize(dxCommon, input);
+	
+	// „É°„Ç§„É≥„É´„Éº„Éó
 	while (true)
 	{
-#ifdef _DEBUG
-		printf("\x1B[2J");
-#endif
-		fps->FpsControlBegin();
+		// „É°„ÉÉ„Çª„Éº„Ç∏Âá¶ÁêÜ
+		if (win->ProcessMessage()) {	break; }
 
-		if (!windowsApp->MessageWindow())//ÉÅÉbÉZÅ[ÉWèàóù
-		{
-			break;
-		}
-
-		//èÄîıèàóù
-		DirectX12Core->BeginDraw();//ï`âÊèÄîı
-		mesh->DrawReset();
-		mesh3D->DrawReset();
-
-		//DirectXñàÉtÉåÅ[ÉÄèàóùÅ@Ç±Ç±Ç©ÇÁ
-
-		//çXêVèàóù
-
+		// ÂÖ•ÂäõÈñ¢ÈÄ£„ÅÆÊØé„Éï„É¨„Éº„É†Âá¶ÁêÜ
 		input->Update();
-		audioManager->Update();
-
+		// „Ç≤„Éº„É†„Ç∑„Éº„É≥„ÅÆÊØé„Éï„É¨„Éº„É†Âá¶ÁêÜ
 		gameScene->Update();
 
-		//ï`âÊèàóù
-
+		// ÊèèÁîªÈñãÂßã
+		dxCommon->PreDraw();
+		// „Ç≤„Éº„É†„Ç∑„Éº„É≥„ÅÆÊèèÁîª
 		gameScene->Draw();
-
-		//DirectXñàÉtÉåÅ[ÉÄèàóùÅ@Ç±Ç±Ç‹Ç≈
-
-		DirectX12Core->EndDraw();//ï`âÊå„èàóù
-
-		if (input->TriggerPush(DIK_ESCAPE))
-		{
-			break;
-		}
-
-		fps->FpsControlEnd();
+		// ÊèèÁîªÁµÇ‰∫Ü
+		dxCommon->PostDraw();
 	}
+	// ÂêÑÁ®ÆËß£Êîæ
+	delete gameScene;
+	delete input;
 
+	// DirectXÁµÇ‰∫ÜÂá¶ÁêÜ
+	dxCommon->Finalize();
+	// „Ç≤„Éº„É†„Ç¶„Ç£„É≥„Éâ„Ç¶„ÅÆÁ†¥Ê£Ñ
+	win->TerminateGameWindow();
 
-	windowsApp->Break();
-	DirectX12Core->Destroy();
-	pipeline->Destroy();
-	mesh->Destroy();
-	mesh3D->Destroy();
-	textureManager->Destroy();
-	audioManager->Destroy();
-	delete fps;
 	return 0;
 }
